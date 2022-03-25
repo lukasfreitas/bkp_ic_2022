@@ -91,7 +91,7 @@ class dinamica:
 
 		
 		
-		print(self.sim.data.geom_xmat.shape)
+		# print(self.sim.data.geom_xmat.shape)
 	
 	
 
