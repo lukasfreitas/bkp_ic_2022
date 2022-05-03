@@ -1,44 +1,81 @@
-from cmath import sqrt
-from   os        import path,system
+
+__doc__ = 'suporte'
+
+from os import path, system
 import numpy as np
-import mujoco_py as mj
-
-from os import path
 from mujoco_py.generated import const
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
-
-
-def exportLib():
-	system("export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/lucas/.mujoco/mujoco210/bin")
-	system("export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/nvidia")
 
 def xacro(model_path, model_name):
-
-	if path.exists(model_path): 
-		system(f"xacro  {model_path}{model_name}.xacro > {model_path}{model_name}.xml")
-		# print(f"xacro  {model_path}{model_name}.xacro > {model_path}{model_name}.xml")
+	'''Converter o arquivo .xacro para .xml'''
+	if path.exists(model_path):
+		system(
+		    f"xacro  {model_path}{model_name}.xacro > {model_path}{model_name}.xml")
 	else:
 		print('Não encontrei o arquivo')
 
 
-def rot(vector, angle=90, axe=(0,1,0)):
+class Plotter():
+	historic_serie_x = []
+	historic_serie_y = []
 
+	def __init__(self) -> None:
+		self.historic_serie_x = np.array(self.historic_serie_x, copy=False)
+		self.historic_serie_y = np.array(self.historic_serie_y, copy=False)
+	
+	def input_value(self, value_or_list_x=None, value_or_list_y=None) -> None:
+		'''Add valores a serie historica para criacao o grafico'''
+
+		dict_type = [np.float64, int, float]
+
+		if value_or_list_x is not None:
+			if type(value_or_list_x) in dict_type:
+				self.historic_serie_x = np.append(arr=self.historic_serie_x, values=value_or_list_x)
+				
+		if value_or_list_y is not None:
+			if type(value_or_list_y) in dict_type:
+				self.historic_serie_y = np.append(self.historic_serie_y, value_or_list_y)
+
+	def plot(self, c_map = 'viridis') -> None:
+		'''Configurando e plotando o grafico'''
+
+		cmap = mpl.colormaps[c_map] 
+		plt.set_cmap(cmap)
+
+		if (len(self.historic_serie_x) == 0) and (len(self.historic_serie_y) == 0):
+			plt.plot(self.historic_serie_x, self.historic_serie_y)
+
+		elif (len(self.historic_serie_x) > 0) and (len(self.historic_serie_y) == 0):
+			plt.plot(np.arange(0, len(self.historic_serie_x)), self.historic_serie_x)
+
+		elif (len(self.historic_serie_x) == 0) and (len(self.historic_serie_y) > 0):
+			plt.plot(np.arange(0, len(self.historic_serie_y)),self.historic_serie_y)
+
+		else:
+			return 'series vazias'
+        
+		plt.show()
+
+def rot(vector, angle=90, axe=(0,1,0)):
+	'''calculo rotacional de um eixo'''
 	vector_np = np.array(vector)
-	angleR    = np.radians(angle)
+	angle_r   = np.radians(angle)
 
 	if   axe == (1,0,0):
 		rot_matrix = np.matrix([[1,              0,                 0],
-								[0, np.cos(angleR), -(np.sin(angleR))],
-								[0, np.sin(angleR),  (np.cos(angleR))]])
+								[0, np.cos(angle_r), -(np.sin(angle_r))],
+								[0, np.sin(angle_r),  (np.cos(angle_r))]])
 		
 	elif axe == (0,1,0):
-		rot_matrix = np.matrix([[np.cos(angleR) , 0, np.sin(angleR)],
+		rot_matrix = np.matrix([[np.cos(angle_r) , 0, np.sin(angle_r)],
 								[0		        , 1, 			 0 ],
-								[-np.sin(angleR), 0, np.cos(angleR)]])
+								[-np.sin(angle_r), 0, np.cos(angle_r)]])
 		print(rot_matrix)
 	elif axe == (0,0,1):
-		rot_matrix = np.matrix([[np.cos(angleR) , -np.sin(angleR),0 ],
-								[np.sin(angleR) ,  np.cos(angleR),0 ],
+		rot_matrix = np.matrix([[np.cos(angle_r) , -np.sin(angle_r),0 ],
+								[np.sin(angle_r) ,  np.cos(angle_r),0 ],
 								[0              , 		        0,1 ]])
 		
 	else :
@@ -73,6 +110,8 @@ class dinamica:
 	angle_v = 0
 	torque  = 0
 
+	plotter = Plotter()
+
 	def __init__(self, sim, view) -> None:
 		self.sim 	= sim
 		self.view 	= view
@@ -83,18 +122,27 @@ class dinamica:
 		self.sim.data.ctrl[0] = self.torque
 
 	def angulo(self):
+		
 		haste_h_rot_matrix = self.sim.data.get_geom_xmat("haste_horizontal_geom")
-		self.angle_h = np.degrees(np.arccos(haste_h_rot_matrix[0][2]))
 
-		haste_v_rot_matrix = self.sim.data.get_geom_xmat("haste_vertical_geom")
-		self.angle_v = np.degrees(np.arccos(haste_v_rot_matrix[0][2]))
+		arccos_h_0_2 = np.degrees(np.arccos(haste_h_rot_matrix[0][2]))
+		arcsin_h_0_1 = np.degrees(np.arcsin(haste_h_rot_matrix[0][1]))
 
+		if arcsin_h_0_1 >= 0:
+			self.angle_h = arccos_h_0_2
+		else :
+			self.angle_h = ( 180 - (arccos_h_0_2)) + 180
+
+
+		# self.angle_h = np.degrees(np.arcsin(haste_h_rot_matrix[0][1]))
+		# self.angle_h = np.degrees(np.arccos(haste_h_rot_matrix[0][1]))
+
+		# haste_v_rot_matrix = self.sim.data.get_geom_xmat("haste_vertical_geom")
+		# self.angle_v = np.degrees(np.arccos(haste_v_rot_matrix[0][2]))
 		
-		
-		# print(self.sim.data.geom_xmat.shape)
+		#print(self.sim.data.geom_xmat.shape)
+		self.plotter.input_value(value_or_list_x=self.angle_h)
 	
-	
-
 		return (self.angle_h, self.angle_v)
 	
 	def screen(self):
@@ -108,6 +156,8 @@ class dinamica:
 		return self.view.render()
 
 
+
+	
 
 if __name__ == '__main__' :
 	...
