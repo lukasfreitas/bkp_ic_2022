@@ -38,13 +38,13 @@ class Plotter():
 			if type(value_or_list_y) in dict_type:
 				self.historic_serie_y = np.append(self.historic_serie_y, value_or_list_y)
 
-	def plot(self, c_map = 'viridis') -> None:
+	def plot(self, c_map = 'viridis', title = 'title', x_label = 'x', y_label = 'y') -> None:
 		'''Configurando e plotando o grafico'''
 
 		cmap = mpl.colormaps[c_map] 
 		plt.set_cmap(cmap)
 
-		if (len(self.historic_serie_x) == 0) and (len(self.historic_serie_y) == 0):
+		if (len(self.historic_serie_x) > 0) and (len(self.historic_serie_y) > 0):
 			plt.plot(self.historic_serie_x, self.historic_serie_y)
 
 		elif (len(self.historic_serie_x) > 0) and (len(self.historic_serie_y) == 0):
@@ -55,7 +55,11 @@ class Plotter():
 
 		else:
 			return 'series vazias'
-        
+
+		plt.title(title)
+		plt.xlabel(x_label)
+		plt.ylabel(y_label)
+
 		plt.show()
 
 def rot(vector, angle=90, axe=(0,1,0)):
@@ -109,39 +113,56 @@ class dinamica:
 	angle_h = 0
 	angle_v = 0
 	torque  = 0
+	mode    = ''
 
 	plotter = Plotter()
 
-	def __init__(self, sim, view) -> None:
+	def __init__(self, sim, view, mode) -> None:
 		self.sim 	= sim
 		self.view 	= view
 		self.phase 	= "inicial"
+		self.mode	= mode
 
 	def control(self, init_torque=0.5):
-		self.torque = init_torque
-		self.sim.data.ctrl[0] = self.torque
+
+		self.torque 			= init_torque
+		self.sim.data.ctrl[0] 	= self.torque
 
 	def angulo(self):
+		if self.mode == 'sim' or self.mode == 'test_h':
+			haste_h_rot_matrix = self.sim.data.get_geom_xmat("haste_horizontal_geom")
+
+			arccos_h_0_2 = np.degrees(np.arccos(haste_h_rot_matrix[0][2]))
+			arcsin_h_0_1 = np.degrees(np.arcsin(haste_h_rot_matrix[0][1]))
+
+
+			if arcsin_h_0_1 >= 0:
+				self.angle_h = arccos_h_0_2
+			else :
+				self.angle_h = ( 180 - (arccos_h_0_2)) + 180
+
+		if self.mode == 'sim' or self.mode == 'test_v':
+			haste_v_rot_matrix = self.sim.data.get_geom_xmat("haste_vertical_geom")
+
+			arccos_v_1_2 = np.degrees(np.arccos(haste_v_rot_matrix[1][2]))
+			arcsin_v_2_2 = np.degrees(np.arcsin(haste_v_rot_matrix[2][2]))
+
+			if arcsin_v_2_2 >= 0:
+				self.angle_v = arccos_v_1_2 + 180
+			else :
+				self.angle_v = ( 180 - (arccos_v_1_2)) 
 		
-		haste_h_rot_matrix = self.sim.data.get_geom_xmat("haste_horizontal_geom")
+		if self.mode == 'sim':
 
-		arccos_h_0_2 = np.degrees(np.arccos(haste_h_rot_matrix[0][2]))
-		arcsin_h_0_1 = np.degrees(np.arcsin(haste_h_rot_matrix[0][1]))
+			self.plotter.input_value(value_or_list_x=self.angle_h, value_or_list_y=self.angle_v)
 
-		if arcsin_h_0_1 >= 0:
-			self.angle_h = arccos_h_0_2
-		else :
-			self.angle_h = ( 180 - (arccos_h_0_2)) + 180
+		elif self.mode == 'test_h':
 
+			self.plotter.input_value(value_or_list_y=self.angle_h)
 
-		# self.angle_h = np.degrees(np.arcsin(haste_h_rot_matrix[0][1]))
-		# self.angle_h = np.degrees(np.arccos(haste_h_rot_matrix[0][1]))
+		else:
 
-		# haste_v_rot_matrix = self.sim.data.get_geom_xmat("haste_vertical_geom")
-		# self.angle_v = np.degrees(np.arccos(haste_v_rot_matrix[0][2]))
-		
-		#print(self.sim.data.geom_xmat.shape)
-		self.plotter.input_value(value_or_list_x=self.angle_h)
+			self.plotter.input_value(value_or_list_y=self.angle_v)
 	
 		return (self.angle_h, self.angle_v)
 	

@@ -31,14 +31,13 @@
 
                 <joint name="motor" pos="0 0 -1.5" type="hinge" axis="1 0 0"/>
 
-                <body name="haste_vertical" pos="-1.5 0 1.71" axisangle="0 1 0 90">
+                <!-- <body name="haste_vertical" pos="-1.5 0 1.71" axisangle="0 1 0 90">
                     <geom name="haste_vertical_geom" type="cylinder" rgba="0 0 1 1" size=".2 1.5" mass="10"/>
                     <inertial pos="0 0 0" mass="${mass}" diaginertia="${X_Y_Inertia} ${X_Y_Inertia} ${Z_Inertia}"/>
 
                     <joint name="conector" pos="0 0 1.5" limited="false" type="hinge" axis="1 0 0"/>
                     
-                    <!-- <joint name="motor_vertical" pos="0 0 1.5" type="hinge" axis="1 0 0"/> -->
-                </body>
+                </body> -->
             </body>
         </body>
     </worldbody>
