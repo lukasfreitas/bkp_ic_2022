@@ -24,15 +24,15 @@
         <body axisangle="0 1 0 90" name="haste_vertical" pos="-1.5 0 1.71">
           <geom mass="10" name="haste_vertical_geom" rgba="0 0 1 1" size=".2 1.5" type="cylinder"/>
           <inertial diaginertia="1.9749999999999999 1.9749999999999999 0.20000000000000004" mass="10" pos="0 0 0"/>
-          <joint axis="1 0 0" limited="false" name="conector" pos="0 0 1.5" type="hinge"/>
-          <!-- <joint name="motor_vertical" pos="0 0 1.5" type="hinge" axis="1 0 0"/> -->
+          <!-- <joint name="conector" pos="0 0 1.5" limited="false" type="hinge" axis="1 0 0"/> -->
+          <joint axis="1 0 0" name="motor_vertical" pos="0 0 1.5" type="hinge"/>
         </body>
       </body>
     </body>
   </worldbody>
   <actuator>
     <motor joint="motor" name="motor"/>
-    <!-- <motor name="motor_vertical"  joint="motor_vertical"/> -->
+    <motor joint="motor_vertical" name="motor_vertical"/>
     <!-- <motor name="conector"  joint="conector"/> -->
   </actuator>
 </mujoco>

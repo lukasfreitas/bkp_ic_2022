@@ -62,6 +62,85 @@ class Plotter():
 
 		plt.show()
 
+	def log_on_file(self, file_name, list_or_value) -> None:
+		file = open(file_name, "w")
+
+		for value in list_or_value:
+			file.write(f'{value}\n')
+
+		file.close() 
+	
+class dinamica:
+	sim  	= ''
+	view 	= ''
+	mode    = ''
+	phase 	= ''
+	angle_h = 0
+	angle_v = 0
+	torque  = 0
+	
+	plotter = Plotter()
+
+	def __init__(self, sim, view, mode) -> None:
+		self.sim 	= sim
+		self.view 	= view
+		self.phase 	= "inicial"
+		self.mode	= mode
+
+	def control(self, motor_index, init_torque=0.5):
+
+		self.torque 					= init_torque
+		self.sim.data.ctrl[motor_index]	= self.torque
+		
+
+	def angulo(self):
+		if self.mode['name'] == 'sim' or self.mode['name'] == 'test_h':
+			haste_h_rot_matrix = self.sim.data.get_geom_xmat("haste_horizontal_geom")
+
+			arccos_h_0_2 = np.degrees(np.arccos(haste_h_rot_matrix[0][2]))
+			arcsin_h_0_1 = np.degrees(np.arcsin(haste_h_rot_matrix[0][1]))
+
+
+			if arcsin_h_0_1 >= 0:
+				self.angle_h = arccos_h_0_2
+			else :
+				self.angle_h = ( 180 - (arccos_h_0_2)) + 180
+
+		if self.mode['name'] == 'sim' or self.mode['name'] == 'test_v':
+			haste_v_rot_matrix = self.sim.data.get_geom_xmat("haste_vertical_geom")
+
+			arccos_v_1_2 = np.degrees(np.arccos(haste_v_rot_matrix[1][2]))
+			arcsin_v_2_2 = np.degrees(np.arcsin(haste_v_rot_matrix[2][2]))
+
+			if arcsin_v_2_2 >= 0:
+				self.angle_v = arccos_v_1_2 + 180
+			else :
+				self.angle_v = ( 180 - (arccos_v_1_2))
+		
+		if self.mode['name'] == 'sim':
+
+			self.plotter.input_value(value_or_list_x=self.angle_h, value_or_list_y=self.angle_v)
+
+		elif self.mode['name'] == 'test_h':
+
+			self.plotter.input_value(value_or_list_y=self.angle_h)
+
+		else:
+
+			self.plotter.input_value(value_or_list_y=self.angle_v)
+
+		return (self.angle_h, self.angle_v)
+	
+	def screen(self):
+		self.angulo()
+
+		self.view.add_overlay(const.GRID_TOPRIGHT,"Fase",f"{self.phase}")
+		self.view.add_overlay(const.GRID_TOPRIGHT,"Haste_H Angulo",f"{round(self.angle_h,1):0^5}")
+		self.view.add_overlay(const.GRID_TOPRIGHT,"Haste_V Angulo",f"{round(self.angle_v,1):0^5}")
+		self.view.add_overlay(const.GRID_TOPRIGHT,"Torque",f"{round(self.torque,1):0^4}")
+
+		return self.view.render()
+
 def rot(vector, angle=90, axe=(0,1,0)):
 	'''calculo rotacional de um eixo'''
 	vector_np = np.array(vector)
@@ -105,81 +184,7 @@ def angle_bw2_vectors (v1, v2, result="radians"):
 	else:
 		print("Erro on [result karg]")
 
-
-class dinamica:
-	sim  	= ''
-	view 	= ''
-	phase 	= ''
-	angle_h = 0
-	angle_v = 0
-	torque  = 0
-	mode    = ''
-
-	plotter = Plotter()
-
-	def __init__(self, sim, view, mode) -> None:
-		self.sim 	= sim
-		self.view 	= view
-		self.phase 	= "inicial"
-		self.mode	= mode
-
-	def control(self, init_torque=0.5):
-
-		self.torque 			= init_torque
-		self.sim.data.ctrl[0] 	= self.torque
-
-	def angulo(self):
-		if self.mode == 'sim' or self.mode == 'test_h':
-			haste_h_rot_matrix = self.sim.data.get_geom_xmat("haste_horizontal_geom")
-
-			arccos_h_0_2 = np.degrees(np.arccos(haste_h_rot_matrix[0][2]))
-			arcsin_h_0_1 = np.degrees(np.arcsin(haste_h_rot_matrix[0][1]))
-
-
-			if arcsin_h_0_1 >= 0:
-				self.angle_h = arccos_h_0_2
-			else :
-				self.angle_h = ( 180 - (arccos_h_0_2)) + 180
-
-		if self.mode == 'sim' or self.mode == 'test_v':
-			haste_v_rot_matrix = self.sim.data.get_geom_xmat("haste_vertical_geom")
-
-			arccos_v_1_2 = np.degrees(np.arccos(haste_v_rot_matrix[1][2]))
-			arcsin_v_2_2 = np.degrees(np.arcsin(haste_v_rot_matrix[2][2]))
-
-			if arcsin_v_2_2 >= 0:
-				self.angle_v = arccos_v_1_2 + 180
-			else :
-				self.angle_v = ( 180 - (arccos_v_1_2)) 
-		
-		if self.mode == 'sim':
-
-			self.plotter.input_value(value_or_list_x=self.angle_h, value_or_list_y=self.angle_v)
-
-		elif self.mode == 'test_h':
-
-			self.plotter.input_value(value_or_list_y=self.angle_h)
-
-		else:
-
-			self.plotter.input_value(value_or_list_y=self.angle_v)
 	
-		return (self.angle_h, self.angle_v)
-	
-	def screen(self):
-		self.angulo()
-
-		self.view.add_overlay(const.GRID_TOPRIGHT,"Fase",f"{self.phase}")
-		self.view.add_overlay(const.GRID_TOPRIGHT,"Haste_H Angulo",f"{round(self.angle_h,1):0^5}")
-		self.view.add_overlay(const.GRID_TOPRIGHT,"Haste_V Angulo",f"{round(self.angle_v,1):0^5}")
-		self.view.add_overlay(const.GRID_TOPRIGHT,"Torque",f"{round(self.torque,1):0^4}")
-
-		return self.view.render()
-
-
-
-	
-
 if __name__ == '__main__' :
 	...
 	# print(rot())
