@@ -1,6 +1,6 @@
 <mujoco xmlns:xacro="http://www.ros.org/wiki/xacro" model="furuta_pendulum">
 
-    <xacro:property name="mass" value="10" />
+    <xacro:property name="mass" value="1" />
     <xacro:property name="r"    value="0.2" />
     <xacro:property name="h"    value="1.5" />
 
@@ -14,7 +14,7 @@
         <material name="MatPlane" reflectance="0.5" shininess="1" specular="1" texrepeat="2 2" texture="texplane"/>
     </asset>
 
-    <option integrator="RK4" iterations="50" solver="PGS" timestep="0.003" >
+    <option integrator="Euler" iterations="50" solver="PGS" timestep="0.003" >
         <!-- <flags solverstat="enable" energy="enable"/>-->
     </option>
 

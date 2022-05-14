@@ -2,6 +2,7 @@
 __doc__ = 'suporte'
 
 from os import path, system
+from xml.dom import ValidationErr
 import numpy as np
 from mujoco_py.generated import const
 import matplotlib.pyplot as plt
@@ -69,6 +70,57 @@ class Plotter():
 			file.write(f'{value}\n')
 
 		file.close() 
+
+class tets_dinamica():
+	count = 0
+	series_index = {}
+	serie = []
+	atual = 0
+	passada = 0
+	erro_serie = []
+
+	def erro_range(self, accuracy, value, interval = 1, delay=1):
+		self.count+=1
+		
+		if (self.count <= delay):
+			return True
+		else:
+			self.erro_serie.append(abs(value -  self.passada))
+			mean_erro = sum(self.erro_serie) / float(len(self.erro_serie))
+
+			if (len(self.erro_serie) >= interval):
+				print(
+				'value',round(value,2),
+				'count',self.count,
+				'passada', round(self.passada, 2),
+				"total",round(sum(self.erro_serie),2),
+				'media',round(mean_erro,2),
+				'tamanho vetor', len(self.erro_serie),
+				sep=' | ')
+				if (mean_erro > accuracy):
+					return False
+				self.erro_serie = []
+
+			return True
+
+	def set_dinamica(self, value, constraint='', index=None):
+
+		resolve = constraint.split(':')
+		resolve[1] = float(resolve[1])
+		if index is None and resolve[0] == 'range' and self.erro_range(resolve[1], value) :
+			
+			self.atual = value
+			self.passada = self.atual
+			self.serie.append(self.atual)
+
+			return value
+		else:
+			raise ValueError('SET_DINAMICA ERROR')
+
+
+
+	
+
 	
 class dinamica:
 	sim  	= ''
@@ -80,6 +132,7 @@ class dinamica:
 	torque  = 0
 	
 	plotter = Plotter()
+	test 	= tets_dinamica()
 
 	def __init__(self, sim, view, mode) -> None:
 		self.sim 	= sim
@@ -102,8 +155,10 @@ class dinamica:
 
 
 			if arcsin_h_0_1 >= 0:
+				# if self.test.set_dinamica(arccos_h_0_2, constraint='range:5'):
 				self.angle_h = arccos_h_0_2
 			else :
+				# if self.test.set_dinamica(( 180 - (arccos_h_0_2)) + 180, constraint='range:5'):
 				self.angle_h = ( 180 - (arccos_h_0_2)) + 180
 
 		if self.mode['name'] == 'sim' or self.mode['name'] == 'test_v':
@@ -113,10 +168,17 @@ class dinamica:
 			arcsin_v_2_2 = np.degrees(np.arcsin(haste_v_rot_matrix[2][2]))
 
 			if arcsin_v_2_2 >= 0:
-				self.angle_v = arccos_v_1_2 + 180
+				try:
+					self.angle_v = self.test.set_dinamica(arccos_v_1_2 + 180, constraint='range:0.5')
+				except ValueError:
+					return -1
 			else :
-				self.angle_v = ( 180 - (arccos_v_1_2))
-		
+				try:
+					self.angle_v = self.test.set_dinamica( 180 - (arccos_v_1_2), constraint='range:0.5')
+				except ValueError:
+					return -1
+			
+
 		if self.mode['name'] == 'sim':
 
 			self.plotter.input_value(value_or_list_x=self.angle_h, value_or_list_y=self.angle_v)
@@ -132,7 +194,10 @@ class dinamica:
 		return (self.angle_h, self.angle_v)
 	
 	def screen(self):
-		self.angulo()
+		
+		if self.angulo() == -1:
+			raise ValidationErr
+
 
 		self.view.add_overlay(const.GRID_TOPRIGHT,"Fase",f"{self.phase}")
 		self.view.add_overlay(const.GRID_TOPRIGHT,"Haste_H Angulo",f"{round(self.angle_h,1):0^5}")
