@@ -3,6 +3,7 @@ __doc__ = 'suporte'
 
 from os import path, system
 from xml.dom import ValidationErr
+import mujoco_py
 import numpy as np
 from mujoco_py.generated import const
 import matplotlib.pyplot as plt
@@ -89,14 +90,14 @@ class tets_dinamica():
 			mean_erro = sum(self.erro_serie) / float(len(self.erro_serie))
 
 			if (len(self.erro_serie) >= interval):
-				print(
-				'value',round(value,2),
-				'count',self.count,
-				'passada', round(self.passada, 2),
-				"total",round(sum(self.erro_serie),2),
-				'media',round(mean_erro,2),
-				'tamanho vetor', len(self.erro_serie),
-				sep=' | ')
+				# print(
+				# 'value',round(value,2),
+				# 'count',self.count,
+				# 'passada', round(self.passada, 2),
+				# "total",round(sum(self.erro_serie),2),
+				# 'media',round(mean_erro,2),
+				# 'tamanho vetor', len(self.erro_serie),
+				# sep=' | ')
 				if (mean_erro > accuracy):
 					return False
 				self.erro_serie = []
@@ -106,7 +107,8 @@ class tets_dinamica():
 	def set_dinamica(self, value, constraint='', index=None):
 
 		resolve = constraint.split(':')
-		resolve[1] = float(resolve[1])
+		# resolve[1] = float(resolve[1])
+		resolve[1] = 1000000000
 		if index is None and resolve[0] == 'range' and self.erro_range(resolve[1], value) :
 			
 			self.atual = value

@@ -37,12 +37,26 @@ pendulum = mj.load_model_from_path(project_path + '/model/' + mode['model_name']
 # pendulum.opt.wind[1]    = 1000
 # pendulum.opt.wind[2]    = 0
 
+
+
+
+
+# print((pendulum.geom_size))
+haste_v_radius = pendulum.geom_size[3][0]
+haste_v_lenght = pendulum.geom_size[3][1]
 if glfw.init():
+# if False:
 
     sim         = mj.MjSim(pendulum,nsubsteps=1)
+
+    for method in dir(sim.data.qfrc_actuator[0]):
+        print(method, end='\n')
+    
     view        = mj.MjViewer(sim)
     dinamica    = config.dinamica(sim, view, mode)
 
+    
+    
     if mode['name'] == 'sim':
         dinamica.control(motor_index['motor_h'])
     else:
@@ -51,6 +65,8 @@ if glfw.init():
     if mode['name'] == 'sim':
         for i in range(3000):# while True:
             sim.step()
+
+            print(pendulum.nbody)
             try:
                 dinamica.screen()
             except ValidationErr:
