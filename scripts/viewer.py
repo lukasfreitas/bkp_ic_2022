@@ -38,7 +38,7 @@ pendulum = mj.load_model_from_path(project_path + '/model/' + mode['model_name']
 # pendulum.opt.wind[2]    = 0
 
 
-
+print(pendulum.nu)
 
 
 # print((pendulum.geom_size))
@@ -49,8 +49,8 @@ if glfw.init():
 
     sim         = mj.MjSim(pendulum,nsubsteps=1)
 
-    for method in dir(sim.data.qfrc_actuator[0]):
-        print(method, end='\n')
+    # for method in dir(sim.data.qfrc_actuator[0]):
+    #     print(method, end='\n')
     
     view        = mj.MjViewer(sim)
     dinamica    = config.dinamica(sim, view, mode)
