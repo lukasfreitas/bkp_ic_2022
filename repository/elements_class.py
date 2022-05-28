@@ -97,6 +97,18 @@ class joint():
         self.qvel.append(self.qvel)
         self.xaxis.append(self.xaxis)
 
+    def angle(self):
+        angle = np.rad2deg(self.qpos[1])
+        if (angle/360) > 1:
+            angle[0] = angle - (360 * (angle//360))
+        return angle[0]
+
+    def set_linear_vel(self, sim_obj, vel) -> None :
+        sim_obj.data.qvel[self.id] = vel
+
+    def lock(self, sim_obj) -> None:
+        sim_obj.data.qvel[self.id] = 0
+
     def update(self, sim_obj) -> None:
     
         self.qpos[1]   = [sim_obj.data.get_joint_qpos(self.name)]

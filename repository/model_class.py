@@ -1,4 +1,40 @@
 import repository.elements_class as elem
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+
+class Plotter():
+
+    historic_serie_x = []
+    historic_serie_y = []
+
+    def input_value(self, value_or_list_x=None, value_or_list_y=None) -> None:
+        '''Add valores a serie historica para criacao o grafico'''
+
+        dict_type = [np.float64, int, float]
+
+        if value_or_list_x is not None:
+            if type(value_or_list_x) in dict_type:
+                self.historic_serie_x = np.append(arr=self.historic_serie_x, values=value_or_list_x)
+				
+        if value_or_list_y is not None:
+            if type(value_or_list_y) in dict_type:
+                self.historic_serie_y = np.append(self.historic_serie_y, value_or_list_y)
+    
+    def plot(self, c_map = 'viridis', title = 'title', x_label = 'x', y_label = 'y') -> None:
+        '''Configurando e plotando o grafico'''
+
+        cmap = mpl.colormaps[c_map] 
+        plt.set_cmap(cmap)
+
+        plt.plot(self.historic_serie_x, self.historic_serie_y)
+
+        plt.title(title)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+
+        plt.show()
+
 
 class model():
 
@@ -14,6 +50,7 @@ class model():
             self.body_dict.update({new_body.name : new_body})
 
     def generate_actuators(self, sim_obj, model_obj) -> None:
+        print(model_obj.nu)
 
         for actuator_id in range(0, model_obj.nu):
 
