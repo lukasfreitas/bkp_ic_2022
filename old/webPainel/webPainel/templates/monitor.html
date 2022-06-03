@@ -1,0 +1,87 @@
+{% extends "index.html" %}
+{% block body %}
+
+<!-- <nav class="navbar bg-light">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">{{painel_tittle}}</span>
+    </div>
+</nav> -->
+<div class="card">
+    <div class="card-body">
+        <div class="container">
+            <div class="row " >
+                <div class="col-sm d-flex justify-content-center" >
+                    <!-- teste1 -->
+                    <canvas id="myChart" style="width: 30; height: 30;"></canvas>
+                </div>
+                <div class="col-sm d-flex justify-content-center">
+                    <!-- teste2 -->
+                    <canvas id="myChart2" style="width: 30; height: 30;"></canvas>
+                </div>
+            </div>
+
+            <div class="row " >
+                <div class="col-sm d-flex justify-content-center" >
+                    <!-- teste1 -->
+                    <canvas id="myChart3" style="width: 30; height: 30;"></canvas>
+                </div>
+                <div class="col-sm d-flex justify-content-center">
+                    <!-- teste2 -->
+                    <canvas id="myChart4" style="width: 30; height: 30;"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+{% block script %}
+<script>
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const labels = []//['1','2','3','4','5','6','7'];
+    const myChart = createChart(ctx, "Angulo",labels, [65, 59, 80, 81, 56, 55, 40], 'rgb(75, 192, 192)') 
+
+    const ctx2 = document.getElementById('myChart2').getContext('2d');
+    // const labels = ['1','2','3','4','5','6','7'];
+    const myChart2 = createChart(ctx2, "Angulo",labels, [65, 59, 80, 81, 56, 55, 40], 'rgb(75, 192, 192)') 
+
+    const ctx3 = document.getElementById('myChart3').getContext('2d');
+    // const labels = ['1','2','3','4','5','6','7'];
+    const myChart3 = createChart(ctx3, "Angulo",labels, [65, 59, 80, 81, 56, 55, 40], 'rgb(75, 192, 192)') 
+
+    const ctx4 = document.getElementById('myChart4').getContext('2d');
+    // const labels = ['1','2','3','4','5','6','7'];
+    const myChart4 = createChart(ctx4, "Angulo",labels, [65, 59, 80, 81, 56, 55, 40], 'rgb(75, 192, 192)') 
+
+
+  
+    $( document ).ready(function() {
+        // document.getElementById("live_status").className = "badge bg-success"; 
+        // document.getElementById("live_status").className = "badge bg-danger";
+        //stream:
+        const source = new EventSource("{% url 'chart_data' %}");
+    
+        source.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            if (myChart.data.labels.length === 7) {
+                myChart.data.labels.shift();
+                myChart.data.datasets[0].data.shift();
+            }
+            
+            myChart.data.labels.push(data.time);
+            myChart.data.datasets[0].data.push(data.value);
+            myChart.update();
+        }
+        // addData(myChart, 'rola', 10)
+
+        
+        changeStatus(false);
+
+    });
+
+</script>
+
+{% endblock %}

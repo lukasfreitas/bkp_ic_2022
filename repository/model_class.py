@@ -50,7 +50,6 @@ class model():
             self.body_dict.update({new_body.name : new_body})
 
     def generate_actuators(self, sim_obj, model_obj) -> None:
-        print(model_obj.nu)
 
         for actuator_id in range(0, model_obj.nu):
 

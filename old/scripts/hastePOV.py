@@ -46,41 +46,56 @@ def check_haste_angle(sim_obj, haste_h, joint_v, joint_h, step, plotter_v, plott
 
     return True, phase
 
-if __name__ == "__main__":
-
+def simulacao(render=True):
     plotter_h = model_class.Plotter()
     plotter_v = model_class.Plotter()
 
     step_counter = 0
     phase = 0
     simulation.view._paused = True
+    motor_h.set_torque(0.5, simulation.sim)
+
+
     while glfw.init():
         
         simulation.update(model)
-        simulation.render_screen()
+        if(render):
+            simulation.render_screen()
+        # motor_h.set_torque(0, simulation.sim)
 
         simulation.add_to_screen('Torque', round(motor_h.torque[1], 2))
         simulation.add_to_screen('Haste_h angle', round(haste_h.angle(), 2))      
         simulation.add_to_screen('Joint_v angle', round(joint_v.angle(), 2))
+        plotter_v.input_value(value_or_list_x=step_counter, value_or_list_y=joint_v.angle())
 
-        # motor_h.set_torque(-1000, simulation.sim)
-        # motor_h.set_torque(1000, simulation.sim)
+        step_counter+=1
+        if step_counter==1000:
+            break
+        # motor_h.set_torque(0, simulation.sim)
+        
         # motor_v.set_torque(1, simulation.sim)
         
         # simulation.sim.reset()
         
-        status, phase = check_haste_angle(simulation.sim, haste_h, joint_v, joint_h, step_counter, plotter_v, plotter_h, phase)
-        if status:
-            step_counter+=1
-        else:
-            break
+        # status, phase = check_haste_angle(simulation.sim, haste_h, joint_v, joint_h, step_counter, plotter_v, plotter_h, phase)
+        # if status:
+        #     step_counter+=1
+        # else:
+        #     break
         
-    plotter_h.plot(title='Angulo motor',      x_label='Angulo haste_h', y_label='Passsos')
-    plotter_v.plot(title='Angulo vertical',   x_label='Angulo haste_v', y_label='Passsos')
+    #plotter_h.plot(title='Angulo motor',      x_label='Angulo haste_h', y_label='Passsos')
+    #plotter_v.plot(title='Angulo vertical',   x_label='Angulo haste_v', y_label='Passsos')
+
+    return (plotter_v.historic_serie_x, plotter_v.historic_serie_y)
 
 
 
+if __name__ == "__main__":
+    x,y = simulacao(False)
 
+    import matplotlib.pyplot as plt
+    plt.plot(x,y)
+    plt.show()
 
 
     
